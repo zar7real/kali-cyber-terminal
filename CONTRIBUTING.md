@@ -5,7 +5,6 @@ First off, thank you for considering contributing to Kali Cyber Terminal! It's p
 
 ## 📋 Table of Contents
 
-- [💭 Code of Conduct](#-code-of-conduct)
 - [🛠️ How Can I Contribute?](#️-how-can-i-contribute)
 - [🐛 Reporting Bugs](#-reporting-bugs)
 - [💡 Suggesting Enhancements](#-suggesting-enhancements)
