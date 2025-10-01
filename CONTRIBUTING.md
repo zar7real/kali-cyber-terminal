@@ -40,11 +40,11 @@ The process described here has several goals:
 - [ ] You are using the latest version of Kali Linux
 - [ ] You are using ZSH as your default shell
 - [ ] You have sourced the latest `.zshrc` file
-- [ ] You have checked the [existing issues](https://github.com/yourusername/kali-cyber-terminal/issues) for duplicates
+- [ ] You have checked the [existing issues](https://github.com/zar7real/kali-cyber-terminal/issues) for duplicates
 
 ### 📊 How Do I Submit A Good Bug Report?
 
-Bugs are tracked as [GitHub issues](https://github.com/yourusername/kali-cyber-terminal/issues). Create an issue and provide the following information:
+Bugs are tracked as [GitHub issues](https://github.com/zar7real/kali-cyber-terminal/issues). Create an issue and provide the following information:
 
 **Bug Report Template:**
 ```markdown
