@@ -1,5 +1,3 @@
-Ecco un **README.md ultra-dettagliato e visivamente stunning** per il tuo repository:
-
 ```markdown
 # 🚀 Kali Cyber Terminal
 
@@ -568,9 +566,9 @@ copies or substantial portions of the Software.
 
 **⭐ If you find this project helpful, please give it a star! ⭐**
 
-**🐛 Found a bug? [Open an issue](https://github.com/yourusername/kali-cyber-terminal/issues)**
+**🐛 Found a bug? [Open an issue](https://github.com/zar7real/kali-cyber-terminal/issues)**
 
-**💡 Have an idea? [Suggest a feature](https://github.com/yourusername/kali-cyber-terminal/issues)**
+**💡 Have an idea? [Suggest a feature](https://github.com/zar7real/kali-cyber-terminal/issues)**
 
 **🔧 Want to help? [Read contributing guidelines](CONTRIBUTING.md)**
 
