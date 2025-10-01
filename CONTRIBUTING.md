@@ -118,7 +118,7 @@ Looking for something to start with? Check out our [Good First Issues](https://g
    ```bash
    # Click the 'Fork' button on GitHub
    # Then clone your fork locally
-   git clone https://github.com/yourusername/kali-cyber-terminal.git
+   git clone https://github.com/zar7real/kali-cyber-terminal.git
    cd kali-cyber-terminal
    ```
 
