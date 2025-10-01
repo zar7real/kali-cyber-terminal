@@ -14,10 +14,6 @@ First off, thank you for considering contributing to Kali Cyber Terminal! It's p
 - [🎨 Style Guidelines](#-style-guide)
 - [📚 Additional Resources](#-additional-resources)
 
-## 💭 Code of Conduct
-
-This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
-
 ## 🛠️ How Can I Contribute?
 
 ### 🐛 Reporting Bugs
